@@ -21,13 +21,17 @@ Revision History:
 #include "ast/ast.h"
 #include<string>
 #include "util/map.h"
+#include "util/obj_hashtable.h"
 
 class smt_renaming {
     struct sym_b { symbol name; bool is_skolem; symbol name_aux; sym_b(symbol n, bool s): name(n), is_skolem(s) {} sym_b():name(),is_skolem(false) {}};
     typedef map<symbol, symbol, symbol_hash_proc, symbol_eq_proc> symbol2symbol;
     typedef map<symbol, sym_b, symbol_hash_proc, symbol_eq_proc> symbol2sym_b;
+    typedef map<symbol, func_decl*, symbol_hash_proc, symbol_eq_proc> symbol2decl;
     symbol2sym_b   m_translate;
     symbol2symbol  m_rev_translate;
+    obj_map<func_decl, symbol> m_decl_names; // output name of each uninterpreted declaration
+    symbol2decl    m_name_owner;             // first uninterpreted declaration seen with a name
 
     symbol fix_symbol(symbol s, int k);
     bool is_legal(char c);
@@ -37,6 +41,7 @@ class smt_renaming {
 public:
     smt_renaming();
     symbol get_symbol(symbol s0, bool is_skolem = false);
+    symbol get_symbol(func_decl* d);
     symbol operator()(symbol const & s, bool is_skolem = false) { return get_symbol(s, is_skolem); }
 };
 
