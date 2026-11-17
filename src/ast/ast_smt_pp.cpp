@@ -132,6 +132,30 @@ smt_renaming::smt_renaming() {
     }
 }
 
+// Distinct uninterpreted declarations can share a name, such as the constants x : Int and x : Real.
+// Name them apart so that the printed benchmark keeps them distinct.
+symbol smt_renaming::get_symbol(func_decl* d) {
+    if (d->get_family_id() != null_family_id)
+        return get_symbol(d->get_name(), d->is_skolem());
+    symbol s;
+    if (m_decl_names.find(d, s))
+        return s;
+    if (m_decl_symbols.contains(d->get_name())) {
+        int k = 1;
+        do {
+            s = fix_symbol(d->get_name(), k++);
+        }
+        while (m_rev_translate.contains(s));
+        m_rev_translate.insert(s, d->get_name());
+    }
+    else {
+        m_decl_symbols.insert(d->get_name());
+        s = get_symbol(d->get_name(), d->is_skolem());
+    }
+    m_decl_names.insert(d, s);
+    return s;
+}
+
 // Ensure that symbols that are used both with skolems and non-skolems are named apart.
 symbol smt_renaming::get_symbol(symbol s0, bool is_skolem) {
     sym_b sb;
@@ -220,7 +244,7 @@ class smt_printer {
     }
 
     void pp_decl(func_decl* d) {
-        symbol sym = m_renaming.get_symbol(d->get_name(), d->is_skolem());
+        symbol sym = m_renaming.get_symbol(d);
         if (d->get_family_id() == m_dt_fid) {
             datatype_util util(m_manager);
             if (util.is_recognizer(d)) {
@@ -424,10 +448,10 @@ class smt_printer {
         }
         else if (num_args == 0) {
             if (decl->private_parameters()) {
-                m_out << m_renaming.get_symbol(decl->get_name(), decl->is_skolem());
+                m_out << m_renaming.get_symbol(decl);
             }
             else {
-                symbol sym = m_renaming.get_symbol(decl->get_name(), decl->is_skolem());
+                symbol sym = m_renaming.get_symbol(decl);
                 visit_params(false, sym, decl->get_num_parameters(), decl->get_parameters());
             }
         }
