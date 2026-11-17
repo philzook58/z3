@@ -27,11 +27,11 @@ class smt_renaming {
     struct sym_b { symbol name; bool is_skolem; symbol name_aux; sym_b(symbol n, bool s): name(n), is_skolem(s) {} sym_b():name(),is_skolem(false) {}};
     typedef map<symbol, symbol, symbol_hash_proc, symbol_eq_proc> symbol2symbol;
     typedef map<symbol, sym_b, symbol_hash_proc, symbol_eq_proc> symbol2sym_b;
-    typedef map<symbol, func_decl*, symbol_hash_proc, symbol_eq_proc> symbol2decl;
+    typedef hashtable<symbol, symbol_hash_proc, symbol_eq_proc> symbol_set;
     symbol2sym_b   m_translate;
     symbol2symbol  m_rev_translate;
     obj_map<func_decl, symbol> m_decl_names; // output name of each uninterpreted declaration
-    symbol2decl    m_name_owner;             // first uninterpreted declaration seen with a name
+    symbol_set     m_decl_symbols;           // names of uninterpreted declarations seen so far
 
     symbol fix_symbol(symbol s, int k);
     bool is_legal(char c);

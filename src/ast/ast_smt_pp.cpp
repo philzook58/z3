@@ -132,7 +132,6 @@ smt_renaming::smt_renaming() {
     }
 }
 
-// Ensure that symbols that are used both with skolems and non-skolems are named apart.
 // Distinct uninterpreted declarations can share a name, such as the constants x : Int and x : Real.
 // Name them apart so that the printed benchmark keeps them distinct.
 symbol smt_renaming::get_symbol(func_decl* d) {
@@ -141,8 +140,7 @@ symbol smt_renaming::get_symbol(func_decl* d) {
     symbol s;
     if (m_decl_names.find(d, s))
         return s;
-    func_decl* owner = nullptr;
-    if (m_name_owner.find(d->get_name(), owner) && owner != d) {
+    if (m_decl_symbols.contains(d->get_name())) {
         int k = 1;
         do {
             s = fix_symbol(d->get_name(), k++);
@@ -151,13 +149,14 @@ symbol smt_renaming::get_symbol(func_decl* d) {
         m_rev_translate.insert(s, d->get_name());
     }
     else {
-        m_name_owner.insert(d->get_name(), d);
+        m_decl_symbols.insert(d->get_name());
         s = get_symbol(d->get_name(), d->is_skolem());
     }
     m_decl_names.insert(d, s);
     return s;
 }
 
+// Ensure that symbols that are used both with skolems and non-skolems are named apart.
 symbol smt_renaming::get_symbol(symbol s0, bool is_skolem) {
     sym_b sb;
     symbol s;
