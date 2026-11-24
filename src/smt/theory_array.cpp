@@ -369,10 +369,19 @@ namespace smt {
         SASSERT(m_find.get_num_vars() == get_num_vars());
     }
     
-    final_check_status theory_array::final_check_eh(unsigned) {
+    final_check_status theory_array::final_check_eh(unsigned level) {
         m_final_check_idx++;
         final_check_status r = FC_DONE;
-        if (m_params.m_array_lazy_ieq) {
+        if (level > 1) {
+            // Re-evaluation after a lower level gave up: do not answer FC_CONTINUE
+            // just because interface equalities are being delayed, or the give-up
+            // of the previous level is masked and final_check loops forever.
+            if (mk_interface_eqs_at_final_check() == FC_CONTINUE)
+                r = FC_CONTINUE;
+            else
+                r = assert_delayed_axioms();
+        }
+        else if (m_params.m_array_lazy_ieq) {
             // Delay the creation of interface equalities...  The
             // motivation is too give other theories and quantifier
             // instantiation to do something useful during final
