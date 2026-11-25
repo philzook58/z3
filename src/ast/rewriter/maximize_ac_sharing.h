@@ -89,6 +89,7 @@ private:
 protected:
     virtual void init_core() = 0; 
     virtual bool is_numeral(expr * n) const = 0;
+    virtual family_id get_family_id() const = 0;
 public:
     maximize_ac_sharing(ast_manager & m);
     virtual ~maximize_ac_sharing();
@@ -105,6 +106,7 @@ class maximize_bv_sharing : public maximize_ac_sharing {
 protected:
     void init_core() override;
     bool is_numeral(expr * n) const override;
+    family_id get_family_id() const override;
 public:
     maximize_bv_sharing(ast_manager & m);
 };

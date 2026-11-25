@@ -32,6 +32,8 @@ br_status maximize_ac_sharing::reduce_app(func_decl * f, unsigned num_args, expr
     decl_kind k = f->get_kind();
     if (!f->is_associative())
         return BR_FAILED;
+    if (f->get_family_id() != get_family_id())
+        return BR_FAILED;
     if (num_args <= 2)
         return BR_FAILED;
     if (std::find(m_kinds.begin(), m_kinds.end(), k) == m_kinds.end())
@@ -170,6 +172,10 @@ void maximize_bv_sharing::init_core() {
     register_kind(OP_BMUL);
     register_kind(OP_BOR);
     register_kind(OP_BAND);
+}
+
+family_id maximize_bv_sharing::get_family_id() const {
+    return m_util.get_fid();
 }
 
 bool maximize_bv_sharing::is_numeral(expr * n) const {
